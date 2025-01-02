@@ -110,7 +110,7 @@ def calc_cost(model_name, input_tokens, output_tokens):
     return cost
 
 
-@retry(wait=wait_random_exponential(min=30, max=600), stop=stop_after_attempt(3))
+@retry(wait=wait_random_exponential(min=30, max=600), stop=stop_after_attempt(6))
 def call_chat(model_name_or_path, inputs, use_azure, temperature, top_p, **model_args):
     """
     Calls the openai API to generate completions for the given inputs.
@@ -123,6 +123,8 @@ def call_chat(model_name_or_path, inputs, use_azure, temperature, top_p, **model
     top_p (float): The top_p to use.
     **model_args (dict): A dictionary of model arguments.
     """
+    from openai import OpenAI
+    openai = OpenAI(api_key="sk-...")
     system_messages = inputs.split("\n", 1)[0]
     user_message = inputs.split("\n", 1)[1]
     try:
@@ -481,6 +483,9 @@ def main(
     if not split in dataset:
         raise ValueError(f"Invalid split {split} for dataset {dataset_name_or_path}")
     dataset = dataset[split]
+    print("*"*100)
+    print(dataset)
+    print("*"*100)
     lens = np.array(list(map(len, dataset["text"])))
     dataset = dataset.select(np.argsort(lens))
     if len(existing_ids) > 0:
